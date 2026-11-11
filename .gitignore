@@ -11,3 +11,9 @@ wheels/
 
 # Secrets
 .env
+
+# Local agent state
+.pha/
+
+# Local agent state
+.pha/
