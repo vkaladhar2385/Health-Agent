@@ -1,0 +1,25 @@
+---
+description: Human-in-the-loop for write/remediation actions on the Pipeline Health Agent
+alwaysApply: true
+---
+
+# Human-in-the-loop (write actions)
+
+Adapted from ADOP’s discovery gate. Same principle, different domain: this agent diagnoses mock pipelines and may propose remediations.
+
+## Read vs write
+
+- Read tools may run without approval: `get_pipeline_metrics`, `search_logs`, `get_recent_deploys`, incident lookup.
+- Write/remediation tools must pause for a human: `restart_consumer`, `scale_partitions`, `open_ticket`, and any future write action.
+
+## Required behavior
+
+- Propose the write action with the reason and expected effect.
+- Stop and wait for approve or reject. Do not invent approval.
+- On reject, do not run the action; record the decision.
+- On approve, run the simulated action, then store the incident in memory.
+- Keep secrets out of source. Use `.env` only.
+
+## Do not copy from ADOP
+
+Do not pull Bronze/Silver/Gold zone questions, Airflow/Glue/SQL rules, or ADOP discovery hooks into this repo. Those belong to the ADOP project only.
