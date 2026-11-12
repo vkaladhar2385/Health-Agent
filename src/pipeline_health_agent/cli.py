@@ -5,10 +5,14 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import webbrowser
+from pathlib import Path
 
+from pipeline_health_agent.audit import AuditLog
 from pipeline_health_agent.data import FAULTS, PIPELINES
 from pipeline_health_agent.graph import resume_diagnosis, start_diagnosis
 from pipeline_health_agent.memory import IncidentStore
+from pipeline_health_agent.observability import DASHBOARD_HTML, get_trace_store, write_dashboard
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -46,6 +50,19 @@ def main(argv: list[str] | None = None) -> None:
     memory = subcommands.add_parser("memory", help="Show saved incidents")
     memory.add_argument("--pipeline", choices=PIPELINES, help="Filter by pipeline")
 
+    audit = subcommands.add_parser("audit", help="Show approval audit log")
+    audit.add_argument("--limit", type=int, default=20)
+
+    dashboard = subcommands.add_parser(
+        "dashboard",
+        help="Write/open the local cost and latency dashboard",
+    )
+    dashboard.add_argument(
+        "--open",
+        action="store_true",
+        help="Open the HTML dashboard in the default browser",
+    )
+
     args = parser.parse_args(argv)
 
     try:
@@ -55,6 +72,10 @@ def main(argv: list[str] | None = None) -> None:
             _cmd_resume(args.thread, args.decision)
         elif args.command == "memory":
             _cmd_memory(args.pipeline)
+        elif args.command == "audit":
+            _cmd_audit(args.limit)
+        elif args.command == "dashboard":
+            _cmd_dashboard(args.open)
         else:
             parser.error(f"Unknown command {args.command}")
     except (RuntimeError, ValueError) as exc:
@@ -68,6 +89,8 @@ def _cmd_diagnose(pipeline: str, fault: str, decision: str | None) -> None:
     print(f"pipeline: {pipeline}")
     print(f"injected fault: {fault}")
     print(f"thread: {thread_id}")
+    if state.get("run_id"):
+        print(f"run_id: {state['run_id']}")
     print()
     _print_section("triage", state.get("triage"))
     _print_section("investigation", state.get("investigation"))
@@ -118,6 +141,30 @@ def _cmd_memory(pipeline: str | None) -> None:
         print("No incidents saved yet.")
 
 
+def _cmd_audit(limit: int) -> None:
+    entries = AuditLog().recent(limit=limit)
+    if not entries:
+        print("No audit entries yet.")
+        return
+    for entry in entries:
+        print(json.dumps(entry.as_dict(), indent=2))
+        print()
+
+
+def _cmd_dashboard(open_browser: bool) -> None:
+    path = write_dashboard()
+    runs = get_trace_store().recent_runs(5)
+    print(f"dashboard: {path}")
+    print(f"recent runs: {len(runs)}")
+    for run in runs:
+        print(
+            f"  {run.started_at} {run.pipeline}/{run.fault} "
+            f"{run.latency_ms:.0f}ms ${run.estimated_cost_usd:.4f} {run.status}"
+        )
+    if open_browser:
+        webbrowser.open(Path(path).resolve().as_uri())
+
+
 def _print_completed(result: dict) -> None:
     state = result.get("state") or {}
     print(f"status: {result.get('status')}")
@@ -128,6 +175,9 @@ def _print_completed(result: dict) -> None:
     print(f"incident_id: {state.get('incident_id')}")
     print()
     print("Incident saved to memory. Inspect with: uv run pha memory")
+    print(f"Audit log: uv run pha audit")
+    print(f"Dashboard: uv run pha dashboard --open")
+    print(f"({DASHBOARD_HTML})")
 
 
 def _print_section(title: str, body: object) -> None:

@@ -1,0 +1,28 @@
+name: eval
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  golden-scenarios:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      - name: Sync
+        run: uv sync
+      - name: Run golden eval suite
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PHA_MODEL: claude-sonnet-5
+          PHA_JUDGE_MODEL: claude-sonnet-5
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "ANTHROPIC_API_KEY secret is required for eval CI"
+            exit 1
+          fi
+          uv run pha-eval

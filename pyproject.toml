@@ -1,7 +1,7 @@
 [project]
 name = "pipeline-health-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "LangGraph HITL agent that diagnoses mock pipeline faults with tools, memory, evals, and tracing"
 readme = "README.md"
 authors = [
     { name = "Vis Sriadibhatla", email = "Vis.Sriadibhatla+prft@perficient.com" }
@@ -9,15 +9,23 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "langchain-anthropic>=1.7.7",
+    "langchain-openai>=1.7.4",
     "langgraph>=1.2.18",
     "langgraph-checkpoint-sqlite>=3.1.3",
     "mcp>=2.3.0",
+    "pytest>=8.0.0",
 ]
 
 [project.scripts]
 pipeline-health-agent = "pipeline_health_agent:main"
 pha = "pipeline_health_agent.cli:main"
 pha-mcp = "pipeline_health_agent.mcp_server:main"
+pha-eval = "pipeline_health_agent.evals.runner:main"
+pha-compare = "pipeline_health_agent.compare_models:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
 
 [build-system]
 requires = ["uv_build>=0.12.10,<0.13.0"]

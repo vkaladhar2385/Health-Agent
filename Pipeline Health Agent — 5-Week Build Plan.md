@@ -75,31 +75,32 @@ Each week ends with a test I can run, not a feeling of progress. If a week's tes
 
 ### Week 3 (Nov 16–22): evaluation suite
 
-- [ ] 25 golden scenarios: fault injected → expected root cause → expected action
-- [ ] Scoring: exact match on action; LLM-as-judge on the diagnosis text with a written rubric
-- [ ] Negative cases: no fault (agent must say healthy), ambiguous data (agent must escalate)
-- [ ] `make eval` prints pass rate, and CI runs it on every push (GitHub Actions)
+- [x] 25 golden scenarios: fault injected → expected root cause → expected action
+- [x] Scoring: exact match on action; LLM-as-judge on the diagnosis text with a written rubric
+- [x] Negative cases: no fault (agent must say healthy), ambiguous data (agent must escalate)
+- [x] `make eval` prints pass rate, and CI runs it on every push (GitHub Actions)
 
-**Exit test:** a quoted number, for example "22/25 scenarios pass", reproducible with one command.
+**Exit test:** **25/25 scenarios pass** with `uv run pha-eval` (2026-11-11).
 
 ### Week 4 (Nov 23–29, Thanksgiving week): observability and guardrails
 
-- [ ] Tracing with Langfuse (self-hosted) or OpenTelemetry: every step, tool call, tokens, cost, latency
-- [ ] Guardrails: tool allow-list per step, argument validation, max steps and max cost per run
-- [ ] Audit log: who approved what and when (matches the JD's "auditability")
-- [ ] Prompt-injection test: a log line containing instructions must not change behaviour
-- [ ] Model swap behind an adapter (for example Claude and one other model) and compare eval scores
+- [x] Tracing (local SQLite + HTML dashboard): every step, tool call, tokens, cost, latency
+- [x] Guardrails: tool allow-list per step, argument validation, max steps and max cost per run
+- [x] Audit log: who approved what and when (matches the JD's "auditability")
+- [x] Prompt-injection test: a log line containing instructions must not change behaviour
+- [x] Model swap behind an adapter (Claude + OpenAI) and compare eval scores (`pha-compare`)
 
-**Exit test:** a dashboard screenshot showing cost and latency per run; the injection test passes.
+**Exit test:** open `.pha/dashboard.html` for cost/latency; injection scenarios `I01`/`I02` pass (`uv run pha-eval --limit 5`).
 
 ### Week 5 (Nov 30–Dec 6): ship it
 
-- [ ] README: problem, architecture diagram, design decisions, eval results, how to run
-- [ ] Write-up: "What I learned building a HITL agent for regulated pipelines" (blog or LinkedIn)
-- [ ] 3-minute demo video: fault → diagnosis → approval → fix → trace
-- [ ] Add the repo link to resume and LinkedIn
+- [x] README: problem, architecture diagram, design decisions, eval results, how to run
+- [x] Write-up draft: `WRITEUP.md` ("What I learned building a HITL agent for regulated pipelines")
+- [x] Demo script: `DEMO.md` (record the 3-minute video from this)
+- [ ] Record/upload the 3-minute demo video and paste the link into README / LinkedIn
+- [ ] Add the public repo link to resume and LinkedIn
 
-**Exit test:** someone else clones the repo and runs it from the README alone.
+**Exit test:** someone else clones https://github.com/vkaladhar2385/Health-Agent and runs it from the README alone.
 
 ## How it maps to the Vista JD
 

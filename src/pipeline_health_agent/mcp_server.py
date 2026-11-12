@@ -16,6 +16,7 @@ from pipeline_health_agent.tools import (
     restart_consumer,
     scale_partitions,
     search_logs,
+    set_tool_step,
 )
 
 server = MCPServer(
@@ -29,6 +30,7 @@ server = MCPServer(
 
 def _ensure_bound(pipeline: str) -> None:
     # MCP calls are stateless; bind a default lag-spike scenario for the named pipeline.
+    set_tool_step("mcp")
     bind_scenario(build_scenario(pipeline if pipeline in PIPELINES else "egress"))
     bind_store(IncidentStore())
 
